@@ -95,204 +95,215 @@ const App = () => {
                         <p className="text-[9px] text-blue-600 font-bold uppercase tracking-widest mt-0.5">Science Exhibition Wayfinder</p>
                     </div>
                 </div>
-                <div className="flex flex-row items-center gap-1.5 sm:gap-2">
+                <div className="hidden sm:flex flex-row items-center gap-2">
                     <button
                         onClick={() => setIsDirectoryOpen(!isDirectoryOpen)}
-                        className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-[10px] font-black transition-colors border-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-50 active:scale-95`}
+                        className="p-2 px-3 py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black transition-colors border-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-50 active:scale-95"
                     >
-                        <List className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden sm:inline">DIRECTORY</span>
+                        <List className="w-3.5 h-3.5" />
+                        <span>DIRECTORY</span>
                     </button>
                     <button
                         onClick={() => setShowPath(!showPath)}
-                        className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-[10px] font-black transition-colors border-2 border-slate-800 active:scale-95 ${showPath ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'}`}
+                        className={`p-2 px-3 py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black transition-colors border-2 border-slate-800 active:scale-95 ${showPath ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'}`}
                     >
-                        <Navigation className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden sm:inline">{showPath ? 'PATH ON' : 'PATH OFF'}</span>
+                        <Navigation className="w-3.5 h-3.5" />
+                        <span>{showPath ? 'PATH ON' : 'PATH OFF'}</span>
                     </button>
                 </div>
             </header>
 
-            {/* Map */}
-            <div className="relative flex-1 overflow-auto bg-white w-full touch-pan-x touch-pan-y overscroll-none scroll-smooth">
-                <svg
-                    viewBox="0 0 900 600"
-                    className="w-full h-full min-w-[760px] sm:min-w-[840px] md:min-w-0 block"
-                    preserveAspectRatio="xMidYMid meet"
+            {/* Map Container */}
+            <div className="relative flex-1 bg-slate-100 overflow-hidden">
+                <div
+                    className="w-full h-full overflow-auto touch-pan-x touch-pan-y scroll-smooth"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                 >
-                    {/* Background */}
-                    <defs>
-                        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-                            <circle cx="1" cy="1" r="0.8" fill="#e2e8f0" />
-                        </pattern>
-                    </defs>
-                    <rect width="900" height="600" fill="#fafafa" />
-                    <rect width="900" height="600" fill="url(#grid)" />
-
-                    {/* Green zones */}
-                    <rect x="15" y="15" width={vRoad1X - 30} height="390" fill="#f0fdf4" stroke="#bbf7d0" strokeWidth="1" rx="6" />
-                    <rect x={vRoad2X + 30} y="15" width={900 - vRoad2X - 45} height="390" fill="#f0fdf4" stroke="#bbf7d0" strokeWidth="1" rx="6" />
-
-                    {/* Roads */}
-                    <rect x="0" y="420" width="900" height="40" fill="#cbd5e1" rx="2" />
-                    <rect x={vRoad1X} y="250" width="30" height="170" fill="#cbd5e1" />
-                    <rect x={vRoad2X} y="200" width="30" height="220" fill="#cbd5e1" />
-                    {/* Road center lines */}
-                    <line x1="0" y1="440" x2="900" y2="440" stroke="white" strokeWidth="2" strokeDasharray="12,18" opacity="0.6" />
-                    <line x1={vRoad1X + 15} y1="250" x2={vRoad1X + 15} y2="420" stroke="white" strokeWidth="2" strokeDasharray="12,18" opacity="0.6" />
-                    <line x1={vRoad2X + 15} y1="200" x2={vRoad2X + 15} y2="420" stroke="white" strokeWidth="2" strokeDasharray="12,18" opacity="0.6" />
-                    <text x="840" y="445" className="fill-slate-500 font-black text-[10px] uppercase tracking-wider">EXIT →</text>
-
-                    {/* Navigation Path - Moved to back layer so it doesn't overlap buildings */}
-                    {showPath && selectedStall && (
-                        <path
-                            d={calculatePath(selectedStall)}
-                            fill="none"
-                            stroke="#ef4444"
-                            strokeWidth="5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeDasharray="12,12"
-                            className="animate-[dash_40s_linear_infinite] opacity-80"
-                        />
-                    )}
-
-                    {/* ── Bottom Row Buildings ── */}
-                    <Building x={30} y={480} w={80} h={60} label="Audi Block" tagPos="bottom" color="#ec4899" />
-                    <Building x={130} y={480} w={80} h={60} label="CJC" tagPos="bottom" color="#ec4899" />
-
-                    {/* Central Block with Gourmet wing */}
-                    <g transform="translate(250, 480)">
-                        <rect width="140" height="70" x="4" y="4" fill="#94a3b8" rx="4" opacity="0.3" />
-                        <rect width="140" height="70" fill="white" stroke="#475569" strokeWidth="2" rx="4" />
-                        <rect x="2" y="2" width="80" height="6" fill="#3b82f6" rx="2" />
-                        <rect x="84" y="2" width="54" height="6" fill="#f97316" rx="2" />
-                        <line x1="85" y1="8" x2="85" y2="70" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="4,3" />
-                        <text x="42" y="32" textAnchor="middle" className="text-[10px] font-black fill-slate-700 uppercase">Central</text>
-                        <text x="42" y="44" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Block</text>
-                        <Utensils className="text-orange-400 opacity-40" x="100" y="18" width="18" height="18" />
-                        <text x="110" y="52" textAnchor="middle" className="text-[8px] font-black fill-orange-500 uppercase tracking-wider">Gourmet</text>
-                        <text x="70" y={-10} textAnchor="middle" className="text-[9px] font-black fill-slate-700 uppercase tracking-wide">Central Block</text>
-                    </g>
-
-                    <Building x={420} y={480} w={140} h={60} label="Ground" color="#10b981" tagPos="bottom" />
-                    <Building x={590} y={480} w={100} h={60} label="Block 4" tagPos="bottom" />
-                    <Building
-                        x={720} y={480} w={120} h={60}
-                        label="R&D Block"
-                        color="#9333ea"
-                        tagPos="bottom"
-                        onClick={(e) => { e.stopPropagation(); setSelectedStall(rdBlockWorkshopNode); }}
-                        isSelected={selectedStall?.id === 'workshop_rd'}
-                    />
-
-                    {/* ── Top Row Buildings ── */}
-                    {/* Registration Desk */}
-                    <g transform="translate(40, 340)">
-                        <rect width="90" height="50" x="4" y="4" fill="#991b1b" rx="4" opacity="0.4" />
-                        <rect width="90" height="50" rx="4" fill="#ef4444" stroke="#b91c1c" strokeWidth="2" />
-                        <text x="45" y="24" textAnchor="middle" className="text-[9px] font-black fill-white uppercase">Registration</text>
-                        <text x="45" y="36" textAnchor="middle" className="text-[7px] font-bold fill-white/80 uppercase tracking-wider">Desk</text>
-                    </g>
-
-                    <Building x={150} y={220} w={100} h={70} label="Basketball Court" color="#f97316" icon={Trophy} />
-                    <Building x={350} y={60} w={180} h={100} label="Block 1" color="#3b82f6" />
-                    <Building
-                        x={545} y={220} w={40} h={140}
-                        label="Workshops (Block 2)"
-                        tagPos="top"
-                        color="#6366f1"
-                        onClick={(e) => { e.stopPropagation(); setSelectedStall(block2WorkshopsNode); }}
-                        isSelected={selectedStall?.id === 'workshops_block2'}
-                    />
-                    <Building x={630} y={180} w={110} h={80} label="Block 3" color="#8b5cf6" />
-                    <Building x={650} y={40} w={140} h={80} label="Birds Park" color="#22c55e" icon={Trees} />
-
-                    {/* ── Exhibition Island Hub ── */}
-                    <g>
-                        {/* Outer guide ring */}
-                        <circle cx={islandCenter.x} cy={islandCenter.y} r={radius + 12} fill="none" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="4,4" />
-                        {/* Main ring */}
-                        <circle cx={islandCenter.x} cy={islandCenter.y} r={radius} fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="8,4" />
-                        {/* Center hub */}
-                        <circle cx={islandCenter.x} cy={islandCenter.y} r="35" fill="#0f172a" />
-                        <text x={islandCenter.x} y={islandCenter.y + 4} textAnchor="middle" className="text-[11px] font-black fill-white uppercase tracking-widest">Island</text>
-
-                        {/* Exhibition Hub Nodes */}
-                        {blockData.map(block => (
-                            <g
-                                key={block.id}
-                                className="cursor-pointer group"
-                                onClick={(e) => handleNodeClick(e, block)}
-                                transform={`translate(${block.x - 35}, ${block.y - 14})`}
-                            >
-                                <rect
-                                    width="70"
-                                    height="28"
-                                    rx="6"
-                                    fill={selectedStall?.id === block.id ? '#ef4444' : '#3b82f6'}
-                                    className="group-hover:fill-blue-400 shadow-sm transition-colors duration-300"
-                                    stroke="white"
-                                    strokeWidth="2"
-                                />
-                                <text x="35" y="17" textAnchor="middle" className="text-[8px] fill-white font-black select-none pointer-events-none uppercase tracking-wider">
-                                    {block.short}
-                                </text>
-                            </g>
-                        ))}
-                    </g>
-
-                    {/* Destination Ping visually pulsing OVER the buildings but not blocking clicks */}
-                    {selectedStall && (
-                        <circle
-                            cx={selectedStall.x}
-                            cy={selectedStall.y}
-                            r="28"
-                            className="animate-ping fill-red-500/50 pointer-events-none"
-                            style={{ animationDuration: '2s' }}
-                        />
-                    )}
-                </svg>
-
-                {/* Legend toggle (mobile) */}
-                <div className="absolute bottom-4 left-4 z-10 sm:hidden pointer-events-none">
-                    <button
-                        onClick={() => setIsLegendOpen(!isLegendOpen)}
-                        className="bg-white text-slate-700 p-2.5 rounded-full shadow-lg border-2 border-slate-300 pointer-events-auto"
+                    <svg
+                        viewBox="0 0 900 600"
+                        className="w-[230%] sm:w-full h-auto sm:h-full min-w-[900px] md:min-w-0 block mb-24 sm:mb-0"
+                        preserveAspectRatio="xMidYMid meet"
                     >
-                        <Info className="w-5 h-5" />
+                        {/* Background */}
+                        <defs>
+                            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                                <circle cx="1" cy="1" r="0.8" fill="#e2e8f0" />
+                            </pattern>
+                        </defs>
+                        <rect width="900" height="600" fill="#fafafa" />
+                        <rect width="900" height="600" fill="url(#grid)" />
+
+                        {/* Green zones */}
+                        <rect x="15" y="15" width={vRoad1X - 30} height="390" fill="#f0fdf4" stroke="#bbf7d0" strokeWidth="1" rx="6" />
+                        <rect x={vRoad2X + 30} y="15" width={900 - vRoad2X - 45} height="390" fill="#f0fdf4" stroke="#bbf7d0" strokeWidth="1" rx="6" />
+
+                        {/* Roads */}
+                        <rect x="0" y="420" width="900" height="40" fill="#cbd5e1" rx="2" />
+                        <rect x={vRoad1X} y="250" width="30" height="170" fill="#cbd5e1" />
+                        <rect x={vRoad2X} y="200" width="30" height="220" fill="#cbd5e1" />
+                        {/* Road center lines */}
+                        <line x1="0" y1="440" x2="900" y2="440" stroke="white" strokeWidth="2" strokeDasharray="12,18" opacity="0.6" />
+                        <line x1={vRoad1X + 15} y1="250" x2={vRoad1X + 15} y2="420" stroke="white" strokeWidth="2" strokeDasharray="12,18" opacity="0.6" />
+                        <line x1={vRoad2X + 15} y1="200" x2={vRoad2X + 15} y2="420" stroke="white" strokeWidth="2" strokeDasharray="12,18" opacity="0.6" />
+                        <text x="840" y="445" className="fill-slate-500 font-black text-[10px] uppercase tracking-wider">EXIT →</text>
+
+                        {/* Navigation Path - Moved to back layer so it doesn't overlap buildings */}
+                        {showPath && selectedStall && (
+                            <path
+                                d={calculatePath(selectedStall)}
+                                fill="none"
+                                stroke="#ef4444"
+                                strokeWidth="5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeDasharray="12,12"
+                                className="animate-[dash_40s_linear_infinite] opacity-80"
+                            />
+                        )}
+
+                        {/* ── Bottom Row Buildings ── */}
+                        <Building x={30} y={480} w={80} h={60} label="Audi Block" tagPos="bottom" color="#ec4899" />
+                        <Building x={130} y={480} w={80} h={60} label="CJC" tagPos="bottom" color="#ec4899" />
+
+                        {/* Central Block with Gourmet wing */}
+                        <g transform="translate(250, 480)">
+                            <rect width="140" height="70" x="4" y="4" fill="#94a3b8" rx="4" opacity="0.3" />
+                            <rect width="140" height="70" fill="white" stroke="#475569" strokeWidth="2" rx="4" />
+                            <rect x="2" y="2" width="80" height="6" fill="#3b82f6" rx="2" />
+                            <rect x="84" y="2" width="54" height="6" fill="#f97316" rx="2" />
+                            <line x1="85" y1="8" x2="85" y2="70" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="4,3" />
+                            <text x="42" y="32" textAnchor="middle" className="text-[10px] font-black fill-slate-700 uppercase">Central</text>
+                            <text x="42" y="44" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Block</text>
+                            <Utensils className="text-orange-400 opacity-40" x="100" y="18" width="18" height="18" />
+                            <text x="110" y="52" textAnchor="middle" className="text-[8px] font-black fill-orange-500 uppercase tracking-wider">Gourmet</text>
+                            <text x="70" y={-10} textAnchor="middle" className="text-[9px] font-black fill-slate-700 uppercase tracking-wide">Central Block</text>
+                        </g>
+
+                        <Building x={420} y={480} w={140} h={60} label="Ground" color="#10b981" tagPos="bottom" />
+                        <Building x={590} y={480} w={100} h={60} label="Block 4" tagPos="bottom" />
+                        <Building
+                            x={720} y={480} w={120} h={60}
+                            label="R&D Block"
+                            color="#9333ea"
+                            tagPos="bottom"
+                            onClick={(e) => { e.stopPropagation(); setSelectedStall(rdBlockWorkshopNode); }}
+                            isSelected={selectedStall?.id === 'workshop_rd'}
+                        />
+
+                        {/* ── Top Row Buildings ── */}
+                        {/* Registration Desk */}
+                        <g transform="translate(40, 340)">
+                            <rect width="90" height="50" x="4" y="4" fill="#991b1b" rx="4" opacity="0.4" />
+                            <rect width="90" height="50" rx="4" fill="#ef4444" stroke="#b91c1c" strokeWidth="2" />
+                            <text x="45" y="24" textAnchor="middle" className="text-[9px] font-black fill-white uppercase">Registration</text>
+                            <text x="45" y="36" textAnchor="middle" className="text-[7px] font-bold fill-white/80 uppercase tracking-wider">Desk</text>
+                        </g>
+
+                        <Building x={150} y={220} w={100} h={70} label="Basketball Court" color="#f97316" icon={Trophy} />
+                        <Building x={350} y={60} w={180} h={100} label="Block 1" color="#3b82f6" />
+                        <Building
+                            x={545} y={220} w={40} h={140}
+                            label="Workshops (Block 2)"
+                            tagPos="top"
+                            color="#6366f1"
+                            onClick={(e) => { e.stopPropagation(); setSelectedStall(block2WorkshopsNode); }}
+                            isSelected={selectedStall?.id === 'workshops_block2'}
+                        />
+                        <Building x={630} y={180} w={110} h={80} label="Block 3" color="#8b5cf6" />
+                        <Building x={650} y={40} w={140} h={80} label="Birds Park" color="#22c55e" icon={Trees} />
+
+                        {/* ── Exhibition Island Hub ── */}
+                        <g>
+                            {/* Outer guide ring */}
+                            <circle cx={islandCenter.x} cy={islandCenter.y} r={radius + 12} fill="none" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="4,4" />
+                            {/* Main ring */}
+                            <circle cx={islandCenter.x} cy={islandCenter.y} r={radius} fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="8,4" />
+                            {/* Center hub */}
+                            <circle cx={islandCenter.x} cy={islandCenter.y} r="35" fill="#0f172a" />
+                            <text x={islandCenter.x} y={islandCenter.y + 4} textAnchor="middle" className="text-[11px] font-black fill-white uppercase tracking-widest">Island</text>
+
+                            {/* Exhibition Hub Nodes */}
+                            {blockData.map(block => (
+                                <g
+                                    key={block.id}
+                                    className="cursor-pointer group"
+                                    onClick={(e) => handleNodeClick(e, block)}
+                                    transform={`translate(${block.x - 35}, ${block.y - 14})`}
+                                >
+                                    <rect
+                                        width="70"
+                                        height="28"
+                                        rx="6"
+                                        fill={selectedStall?.id === block.id ? '#ef4444' : '#3b82f6'}
+                                        className="group-hover:fill-blue-400 shadow-sm transition-colors duration-300"
+                                        stroke="white"
+                                        strokeWidth="2"
+                                    />
+                                    <text x="35" y="17" textAnchor="middle" className="text-[8px] fill-white font-black select-none pointer-events-none uppercase tracking-wider">
+                                        {block.short}
+                                    </text>
+                                </g>
+                            ))}
+                        </g>
+
+                        {/* Destination Ping visually pulsing OVER the buildings but not blocking clicks */}
+                        {selectedStall && (
+                            <circle
+                                cx={selectedStall.x}
+                                cy={selectedStall.y}
+                                r="28"
+                                className="animate-ping fill-red-500/50 pointer-events-none"
+                                style={{ animationDuration: '2s' }}
+                            />
+                        )}
+                    </svg>
+                </div>
+
+                {/* Mobile Bottom Navigation */}
+                <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around items-center px-2 py-3 pb-safe z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+                    <button onClick={() => setIsLegendOpen(!isLegendOpen)} className={`flex flex-col items-center gap-1 flex-1 transition-colors ${isLegendOpen ? 'text-blue-600' : 'text-slate-400'}`}>
+                        <Info className={`w-6 h-6 ${isLegendOpen ? 'fill-blue-50' : ''}`} />
+                        <span className="text-[10px] font-black tracking-widest uppercase mt-0.5">Legend</span>
+                    </button>
+                    <button onClick={() => setShowPath(!showPath)} className={`flex flex-col items-center gap-1 flex-1 transition-colors ${showPath ? 'text-blue-600' : 'text-slate-400'}`}>
+                        <Navigation className={`w-6 h-6 ${showPath ? 'fill-blue-50' : ''}`} />
+                        <span className="text-[10px] font-black tracking-widest uppercase mt-0.5">Path</span>
+                    </button>
+                    <button onClick={() => setIsDirectoryOpen(!isDirectoryOpen)} className={`flex flex-col items-center gap-1 flex-1 transition-colors ${isDirectoryOpen ? 'text-blue-600' : 'text-slate-400'}`}>
+                        <List className={`w-6 h-6 ${isDirectoryOpen ? 'fill-blue-50' : ''}`} />
+                        <span className="text-[10px] font-black tracking-widest uppercase mt-0.5">Directory</span>
                     </button>
                 </div>
 
-                {/* Legend */}
-                <div className={`absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-44 z-10 transition-all duration-200 pointer-events-none ${isLegendOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 sm:translate-y-0 sm:opacity-100'}`}>
-                    <div className="bg-white p-3 rounded-xl shadow-lg border-2 border-slate-200 pointer-events-auto">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Legend</h3>
-                            <button onClick={() => setIsLegendOpen(false)} className="sm:hidden text-slate-400"><X className="w-4 h-4" /></button>
+                {/* Legend Overlay */}
+                <div className={`fixed sm:absolute bottom-24 sm:bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-48 z-40 transition-all duration-300 pointer-events-none ${isLegendOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0 sm:translate-y-0 sm:opacity-100'}`}>
+                    <div className="bg-white p-4 sm:p-3 rounded-2xl sm:rounded-xl shadow-2xl border border-slate-200 pointer-events-auto">
+                        <div className="flex justify-between items-center mb-3 sm:mb-2">
+                            <h3 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Map Legend</h3>
+                            <button onClick={() => setIsLegendOpen(false)} className="sm:hidden text-slate-400 p-1 bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-3 rounded bg-blue-600 border border-white shadow-sm" />
-                                <span className="text-[10px] font-bold text-slate-600">Exhibition Hubs</span>
+                        <div className="flex flex-col gap-3 sm:gap-2">
+                            <div className="flex items-center gap-3">
+                                <div className="w-5 h-4 rounded bg-blue-600 shadow-sm" />
+                                <span className="text-xs sm:text-[10px] font-bold text-slate-600">Exhibition Hubs</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded bg-orange-400" />
-                                <span className="text-[10px] font-bold text-slate-600">Gourmet Zone</span>
+                            <div className="flex items-center gap-3">
+                                <div className="w-4 h-4 rounded bg-orange-400" />
+                                <span className="text-xs sm:text-[10px] font-bold text-slate-600">Gourmet Zone</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-0.5 bg-red-500 rounded-full" />
-                                <span className="text-[10px] font-bold text-slate-600">Guided Path</span>
+                            <div className="flex items-center gap-3">
+                                <div className="w-5 h-1 bg-red-500 rounded-full" />
+                                <span className="text-xs sm:text-[10px] font-bold text-slate-600">Guided Navigation</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 {/* Stall Detail Popup - NO backdrop-blur to avoid blurring the map */}
                 {selectedStall && (
-                    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
                         {/* Backdrop - solid opacity, no blur */}
                         <div
-                            className="absolute inset-0 bg-slate-900/20 sm:bg-slate-900/40 pointer-events-auto transition-opacity duration-300"
+                            className="fixed inset-0 bg-slate-900/20 sm:bg-slate-900/40 pointer-events-auto transition-opacity duration-300"
                             onClick={() => setSelectedStall(null)}
                         />
                         {/* Card */}
@@ -332,8 +343,8 @@ const App = () => {
 
                 {/* Directory Slide-over / Modal */}
                 {isDirectoryOpen && (
-                    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-                        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-[fadeIn_0.2s_ease-out]" onClick={() => setIsDirectoryOpen(false)} />
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-[fadeIn_0.2s_ease-out]" onClick={() => setIsDirectoryOpen(false)} />
                         <div className="relative bg-white w-full sm:max-w-md max-h-[85vh] min-h-[50vh] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10 animate-[slideUp_0.3s_ease-out]">
                             <div className="bg-slate-900 px-5 pt-6 pb-4 sm:py-4 text-white relative flex justify-between items-center shrink-0">
                                 {/* Mobile handle */}
@@ -343,11 +354,11 @@ const App = () => {
                                     <h2 className="text-lg font-black tracking-tight">Exhibition Directory</h2>
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Find Hubs & Workshops</p>
                                 </div>
-                                <button onClick={() => setIsDirectoryOpen(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors active:scale-95">
+                                <button onClick={() => setIsDirectoryOpen(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors active:scale-90">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50 overscroll-contain">
+                            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50 overscroll-contain pb-8">
                                 {allDestinations.map(dest => (
                                     <button
                                         key={dest.id}
