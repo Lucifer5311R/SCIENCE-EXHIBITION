@@ -95,17 +95,17 @@ const App = () => {
                         <p className="text-[9px] text-blue-600 font-bold uppercase tracking-widest mt-0.5">Science Exhibition Wayfinder</p>
                     </div>
                 </div>
-                <div className="flex flex-row items-center gap-2">
+                <div className="flex flex-row items-center gap-1.5 sm:gap-2">
                     <button
                         onClick={() => setIsDirectoryOpen(!isDirectoryOpen)}
-                        className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black transition-colors border-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-50`}
+                        className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-[10px] font-black transition-colors border-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-50 active:scale-95`}
                     >
                         <List className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                         <span className="hidden sm:inline">DIRECTORY</span>
                     </button>
                     <button
                         onClick={() => setShowPath(!showPath)}
-                        className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black transition-colors border-2 border-slate-800 ${showPath ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'}`}
+                        className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-[10px] font-black transition-colors border-2 border-slate-800 active:scale-95 ${showPath ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'}`}
                     >
                         <Navigation className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                         <span className="hidden sm:inline">{showPath ? 'PATH ON' : 'PATH OFF'}</span>
@@ -114,10 +114,10 @@ const App = () => {
             </header>
 
             {/* Map */}
-            <div className="relative flex-1 overflow-auto bg-white w-full">
+            <div className="relative flex-1 overflow-auto bg-white w-full touch-pan-x touch-pan-y overscroll-none scroll-smooth">
                 <svg
                     viewBox="0 0 900 600"
-                    className="w-full h-full min-w-[840px] md:min-w-0 block"
+                    className="w-full h-full min-w-[760px] sm:min-w-[840px] md:min-w-0 block"
                     preserveAspectRatio="xMidYMid meet"
                 >
                     {/* Background */}
@@ -289,15 +289,18 @@ const App = () => {
                 </div>
                 {/* Stall Detail Popup - NO backdrop-blur to avoid blurring the map */}
                 {selectedStall && (
-                    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center">
+                    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
                         {/* Backdrop - solid opacity, no blur */}
                         <div
-                            className="absolute inset-0 bg-black/50"
+                            className="absolute inset-0 bg-slate-900/20 sm:bg-slate-900/40 pointer-events-auto transition-opacity duration-300"
                             onClick={() => setSelectedStall(null)}
                         />
                         {/* Card */}
-                        <div className="relative bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden z-10">
-                            <div className="bg-blue-600 px-5 py-4 text-white relative">
+                        <div className="relative bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden z-10 pointer-events-auto animate-[slideUp_0.3s_ease-out]">
+                            <div className="bg-blue-600 px-5 pt-6 pb-4 sm:py-4 text-white relative">
+                                {/* Mobile handle */}
+                                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-white/30 sm:hidden" />
+
                                 <div className="flex items-center gap-1.5 opacity-80 text-[9px] font-black uppercase mb-1 tracking-widest">
                                     <MapPin className="w-3 h-3" /> {selectedStall.short} {(!selectedStall.id.includes('workshop')) ? 'HUB' : 'VENUE'}
                                 </div>
@@ -329,19 +332,22 @@ const App = () => {
 
                 {/* Directory Slide-over / Modal */}
                 {isDirectoryOpen && (
-                    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsDirectoryOpen(false)} />
-                        <div className="relative bg-white w-full sm:max-w-md max-h-[85vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10 animate-in zoom-in-95 duration-200">
-                            <div className="bg-slate-900 px-5 py-4 text-white flex justify-between items-center shrink-0">
+                    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+                        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-[fadeIn_0.2s_ease-out]" onClick={() => setIsDirectoryOpen(false)} />
+                        <div className="relative bg-white w-full sm:max-w-md max-h-[85vh] min-h-[50vh] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10 animate-[slideUp_0.3s_ease-out]">
+                            <div className="bg-slate-900 px-5 pt-6 pb-4 sm:py-4 text-white relative flex justify-between items-center shrink-0">
+                                {/* Mobile handle */}
+                                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-white/20 sm:hidden" />
+
                                 <div>
                                     <h2 className="text-lg font-black tracking-tight">Exhibition Directory</h2>
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Find Hubs & Workshops</p>
                                 </div>
-                                <button onClick={() => setIsDirectoryOpen(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">
+                                <button onClick={() => setIsDirectoryOpen(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors active:scale-95">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50">
+                            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50 overscroll-contain">
                                 {allDestinations.map(dest => (
                                     <button
                                         key={dest.id}
@@ -364,7 +370,17 @@ const App = () => {
                     </div>
                 )}
 
-                <style>{`@keyframes dash { to { stroke-dashoffset: -1000; } }`}</style>
+                <style>{`
+                    @keyframes dash { to { stroke-dashoffset: -1000; } }
+                    @keyframes slideUp { 
+                        from { transform: translateY(100%); opacity: 0; } 
+                        to { transform: translateY(0); opacity: 1; } 
+                    }
+                    @keyframes fadeIn { 
+                        from { opacity: 0; } 
+                        to { opacity: 1; } 
+                    }
+                `}</style>
             </div>
         </div>
     );
