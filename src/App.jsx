@@ -1,54 +1,86 @@
-import React, { useState } from 'react';
-import { MapPin, X, Navigation, Beaker, Info, Utensils, Trees, Trophy } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { MapPin, X, Navigation, Beaker, Info, Utensils, Trees, Trophy, List } from 'lucide-react';
 import { calculatePath } from './utils/navigation';
+
+// Extracted and Memoized Building Component to prevent map re-renders
+const Building = React.memo(({ x, y, w, h, label, color = '#3b82f6', icon: Icon, tagPos = 'top', onClick, isSelected }) => (
+    <g transform={`translate(${x}, ${y})`} onClick={onClick} className={onClick ? "cursor-pointer group" : ""}>
+        <rect width={w} height={h} x="4" y="4" fill="#94a3b8" rx="4" opacity="0.3" />
+        <rect width={w} height={h} fill={isSelected ? '#fee2e2' : 'white'} stroke={isSelected ? '#ef4444' : '#475569'} strokeWidth={isSelected ? '3' : '2'} rx="4" className={onClick ? "transition-colors duration-300" : ""} />
+        <rect x="2" y="2" width={w - 4} height="6" fill={isSelected ? '#ef4444' : color} rx="2" className={onClick ? "transition-colors duration-300" : ""} />
+        <g transform={tagPos === 'top' ? `translate(${w / 2}, -10)` : `translate(${w / 2}, ${h + 14})`}>
+            <text textAnchor="middle" className={`text-[9px] font-black uppercase tracking-wide ${isSelected ? 'fill-red-600' : 'fill-slate-700'} ${onClick ? 'group-hover:text-red-500 transition-colors' : ''}`}>
+                {label}
+            </text>
+        </g>
+        {Icon && <Icon className={`opacity-10 pointer-events-none ${isSelected ? 'text-red-500' : 'text-slate-400'}`} x={w / 2 - 10} y={h / 2 - 10} width={20} height={20} />}
+    </g>
+));
 
 const App = () => {
     const [selectedStall, setSelectedStall] = useState(null);
-    const [showPath, setShowPath] = useState(true);
+    const [showPath, setShowPath] = useState(false);
     const [isLegendOpen, setIsLegendOpen] = useState(false);
+    const [isDirectoryOpen, setIsDirectoryOpen] = useState(false);
 
     // Layout Constants - matching original map.js coordinates
-    const islandCenter = { x: 440, y: 260 };
+    const islandCenter = useMemo(() => ({ x: 440, y: 260 }), []);
     const radius = 80;
     const vRoad1X = 270;
     const vRoad2X = 580;
 
-    // Stall Data - evenly distributed around island
-    const stallData = [
-        { title: 'Quantum Computing', desc: 'Superconducting circuits and qubits demonstration.' },
-        { title: 'Renewable Systems', desc: 'Solar tracking and wind turbine optimization.' },
-        { title: 'Bio-Genetics', desc: 'CRISPR-Cas9 visualization and DNA extraction.' },
-        { title: 'Robotics & AI', desc: 'Autonomous rover on simulated Martian terrain.' },
-        { title: 'Astro-Physics', desc: 'Solar telescope and deep-space imaging.' },
-        { title: 'Marine Biology', desc: 'Coral reef restoration and ecosystem sensors.' },
-        { title: 'Structural Eng.', desc: 'Bridge stress-testing and seismic builds.' },
-        { title: 'Nano-Tech', desc: 'Carbon nanotube models and microscopy.' }
-    ].map((info, i) => {
-        const angle = (i * 45) * (Math.PI / 180);
-        return {
-            id: i + 1,
-            title: info.title,
-            location: 'Island Perimeter',
-            description: info.desc,
-            x: Math.round(islandCenter.x + radius * Math.cos(angle)),
-            y: Math.round(islandCenter.y + radius * Math.sin(angle))
-        };
-    });
+    // Memoize static data structures
+    const { blockData, block2WorkshopsNode, rdBlockWorkshopNode, allDestinations } = useMemo(() => {
+        // Block Data around Island
+        const blocks = [
+            { id: 'internal', title: "Internal Projects", short: "INTERNAL", desc: "A dedicated area showcasing intra-collegiate projects, student research, and internal technological innovations.", angle: 210 },
+            { id: 'external', title: "External Innovations", short: "EXTERNAL", desc: "Guest exhibits featuring cutting-edge prototypes, projects, and ideas from visiting academic institutions.", angle: 330 },
+            { id: 'industrial', title: "Industrial Partners", short: "INDUSTRY", desc: "Professional demonstrations highlighting real-world applications and future technologies brought by our corporate partners.", angle: 90 }
+        ].map((info) => {
+            const rad = info.angle * (Math.PI / 180);
+            return {
+                ...info,
+                location: "Island Perimeter",
+                description: info.desc,
+                x: Math.round(islandCenter.x + 95 * Math.cos(rad)),
+                y: Math.round(islandCenter.y + 95 * Math.sin(rad))
+            };
+        });
 
-    // Clean Building component - no blur, no broken SVG attributes
-    const Building = ({ x, y, w, h, label, color = '#3b82f6', icon: Icon, tagPos = 'top' }) => (
-        <g transform={`translate(${x}, ${y})`}>
-            <rect width={w} height={h} x="4" y="4" fill="#94a3b8" rx="4" opacity="0.3" />
-            <rect width={w} height={h} fill="white" stroke="#475569" strokeWidth="2" rx="4" />
-            <rect x="2" y="2" width={w - 4} height="6" fill={color} rx="2" />
-            <g transform={tagPos === 'top' ? `translate(${w / 2}, -10)` : `translate(${w / 2}, ${h + 14})`}>
-                <text textAnchor="middle" className="text-[9px] font-black fill-slate-700 uppercase tracking-wide">
-                    {label}
-                </text>
-            </g>
-            {Icon && <Icon className="opacity-10 text-slate-400" x={w / 2 - 10} y={h / 2 - 10} width={20} height={20} />}
-        </g>
-    );
+        const block2 = {
+            id: 'workshops_block2',
+            title: "Technical Workshops",
+            short: "WORKSHOPS",
+            location: "Block 2",
+            description: "📍 VENUE: First Floor, Block 2\n\n🤖 Workshop on Essentials of Robotics\nVENUE: BCA Lab\n\n🧠 Workshop on Essential AI Tools\nVENUE: MCA Lab",
+            x: 565,
+            y: 290
+        };
+
+        const rdBlock = {
+            id: 'workshop_rd',
+            title: "Quantum Workshop",
+            short: "QUATUM TECH",
+            location: "R&D Block",
+            description: "🧪 Essentials of Quantum Technologies\n\n📍 VENUE: 402, 4th Floor, R&D Block",
+            x: 780,
+            y: 510
+        };
+
+        return {
+            blockData: blocks,
+            block2WorkshopsNode: block2,
+            rdBlockWorkshopNode: rdBlock,
+            allDestinations: [...blocks, block2, rdBlock]
+        };
+    }, [islandCenter]);
+
+    // Optimize click handlers
+    const handleNodeClick = useCallback((e, node) => {
+        e.stopPropagation();
+        setSelectedStall(node);
+        if (!showPath) setShowPath(true);
+    }, [showPath]);
 
     return (
         <div className="flex flex-col h-[100dvh] bg-slate-50 text-slate-800 overflow-hidden font-sans">
@@ -63,13 +95,22 @@ const App = () => {
                         <p className="text-[9px] text-blue-600 font-bold uppercase tracking-widest mt-0.5">Science Exhibition Wayfinder</p>
                     </div>
                 </div>
-                <button
-                    onClick={() => setShowPath(!showPath)}
-                    className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black transition-colors border-2 border-slate-800 ${showPath ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'}`}
-                >
-                    <Navigation className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-                    <span className="hidden sm:inline">{showPath ? 'PATH ON' : 'PATH OFF'}</span>
-                </button>
+                <div className="flex flex-row items-center gap-2">
+                    <button
+                        onClick={() => setIsDirectoryOpen(!isDirectoryOpen)}
+                        className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black transition-colors border-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-50`}
+                    >
+                        <List className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                        <span className="hidden sm:inline">DIRECTORY</span>
+                    </button>
+                    <button
+                        onClick={() => setShowPath(!showPath)}
+                        className={`p-2 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black transition-colors border-2 border-slate-800 ${showPath ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'}`}
+                    >
+                        <Navigation className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                        <span className="hidden sm:inline">{showPath ? 'PATH ON' : 'PATH OFF'}</span>
+                    </button>
+                </div>
             </header>
 
             {/* Map */}
@@ -102,6 +143,20 @@ const App = () => {
                     <line x1={vRoad2X + 15} y1="200" x2={vRoad2X + 15} y2="420" stroke="white" strokeWidth="2" strokeDasharray="12,18" opacity="0.6" />
                     <text x="840" y="445" className="fill-slate-500 font-black text-[10px] uppercase tracking-wider">EXIT →</text>
 
+                    {/* Navigation Path - Moved to back layer so it doesn't overlap buildings */}
+                    {showPath && selectedStall && (
+                        <path
+                            d={calculatePath(selectedStall)}
+                            fill="none"
+                            stroke="#ef4444"
+                            strokeWidth="5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeDasharray="12,12"
+                            className="animate-[dash_40s_linear_infinite] opacity-80"
+                        />
+                    )}
+
                     {/* ── Bottom Row Buildings ── */}
                     <Building x={30} y={480} w={80} h={60} label="Audi Block" tagPos="bottom" color="#ec4899" />
                     <Building x={130} y={480} w={80} h={60} label="CJC" tagPos="bottom" color="#ec4899" />
@@ -122,7 +177,14 @@ const App = () => {
 
                     <Building x={420} y={480} w={140} h={60} label="Ground" color="#10b981" tagPos="bottom" />
                     <Building x={590} y={480} w={100} h={60} label="Block 4" tagPos="bottom" />
-                    <Building x={720} y={480} w={120} h={60} label="R&D Block" color="#9333ea" tagPos="bottom" />
+                    <Building
+                        x={720} y={480} w={120} h={60}
+                        label="R&D Block"
+                        color="#9333ea"
+                        tagPos="bottom"
+                        onClick={(e) => { e.stopPropagation(); setSelectedStall(rdBlockWorkshopNode); }}
+                        isSelected={selectedStall?.id === 'workshop_rd'}
+                    />
 
                     {/* ── Top Row Buildings ── */}
                     {/* Registration Desk */}
@@ -135,7 +197,14 @@ const App = () => {
 
                     <Building x={150} y={220} w={100} h={70} label="Basketball Court" color="#f97316" icon={Trophy} />
                     <Building x={350} y={60} w={180} h={100} label="Block 1" color="#3b82f6" />
-                    <Building x={545} y={220} w={40} h={140} label="Block 2" tagPos="top" color="#6366f1" />
+                    <Building
+                        x={545} y={220} w={40} h={140}
+                        label="Workshops (Block 2)"
+                        tagPos="top"
+                        color="#6366f1"
+                        onClick={(e) => { e.stopPropagation(); setSelectedStall(block2WorkshopsNode); }}
+                        isSelected={selectedStall?.id === 'workshops_block2'}
+                    />
                     <Building x={630} y={180} w={110} h={80} label="Block 3" color="#8b5cf6" />
                     <Building x={650} y={40} w={140} h={80} label="Birds Park" color="#22c55e" icon={Trees} />
 
@@ -149,76 +218,63 @@ const App = () => {
                         <circle cx={islandCenter.x} cy={islandCenter.y} r="35" fill="#0f172a" />
                         <text x={islandCenter.x} y={islandCenter.y + 4} textAnchor="middle" className="text-[11px] font-black fill-white uppercase tracking-widest">Island</text>
 
-                        {/* Stall Nodes */}
-                        {stallData.map(stall => (
+                        {/* Exhibition Hub Nodes */}
+                        {blockData.map(block => (
                             <g
-                                key={stall.id}
-                                className="cursor-pointer"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedStall(stall);
-                                }}
+                                key={block.id}
+                                className="cursor-pointer group"
+                                onClick={(e) => handleNodeClick(e, block)}
+                                transform={`translate(${block.x - 35}, ${block.y - 14})`}
                             >
-                                {/* Spoke line */}
-                                <line x1={islandCenter.x} y1={islandCenter.y} x2={stall.x} y2={stall.y} stroke="#e2e8f0" strokeWidth="1.5" />
-                                {/* Node circle */}
-                                <circle
-                                    cx={stall.x}
-                                    cy={stall.y}
-                                    r="15"
-                                    fill={selectedStall?.id === stall.id ? '#ef4444' : '#3b82f6'}
+                                <rect
+                                    width="70"
+                                    height="28"
+                                    rx="6"
+                                    fill={selectedStall?.id === block.id ? '#ef4444' : '#3b82f6'}
+                                    className="group-hover:fill-blue-400 shadow-sm transition-colors duration-300"
                                     stroke="white"
-                                    strokeWidth="3"
+                                    strokeWidth="2"
                                 />
-                                {/* Label */}
-                                <text
-                                    x={stall.x}
-                                    y={stall.y + 4}
-                                    textAnchor="middle"
-                                    className="text-[9px] fill-white font-black select-none pointer-events-none"
-                                >
-                                    S{stall.id}
+                                <text x="35" y="17" textAnchor="middle" className="text-[8px] fill-white font-black select-none pointer-events-none uppercase tracking-wider">
+                                    {block.short}
                                 </text>
                             </g>
                         ))}
                     </g>
 
-                    {/* Navigation Path */}
-                    {showPath && (
-                        <path
-                            d={selectedStall ? calculatePath(selectedStall) : 'M 85,365 L 85,440 L 870,440'}
-                            fill="none"
-                            stroke="#ef4444"
-                            strokeWidth="5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeDasharray="12,12"
-                            className="animate-[dash_40s_linear_infinite]"
+                    {/* Destination Ping visually pulsing OVER the buildings but not blocking clicks */}
+                    {selectedStall && (
+                        <circle
+                            cx={selectedStall.x}
+                            cy={selectedStall.y}
+                            r="28"
+                            className="animate-ping fill-red-500/50 pointer-events-none"
+                            style={{ animationDuration: '2s' }}
                         />
                     )}
                 </svg>
 
                 {/* Legend toggle (mobile) */}
-                <div className="absolute bottom-4 left-4 z-10 sm:hidden">
+                <div className="absolute bottom-4 left-4 z-10 sm:hidden pointer-events-none">
                     <button
                         onClick={() => setIsLegendOpen(!isLegendOpen)}
-                        className="bg-white text-slate-700 p-2.5 rounded-full shadow-lg border-2 border-slate-300"
+                        className="bg-white text-slate-700 p-2.5 rounded-full shadow-lg border-2 border-slate-300 pointer-events-auto"
                     >
                         <Info className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Legend */}
-                <div className={`absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-44 z-10 transition-all duration-200 ${isLegendOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none sm:translate-y-0 sm:opacity-100 sm:pointer-events-auto'}`}>
-                    <div className="bg-white p-3 rounded-xl shadow-lg border-2 border-slate-200">
+                <div className={`absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-44 z-10 transition-all duration-200 pointer-events-none ${isLegendOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 sm:translate-y-0 sm:opacity-100'}`}>
+                    <div className="bg-white p-3 rounded-xl shadow-lg border-2 border-slate-200 pointer-events-auto">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Legend</h3>
                             <button onClick={() => setIsLegendOpen(false)} className="sm:hidden text-slate-400"><X className="w-4 h-4" /></button>
                         </div>
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow-sm" />
-                                <span className="text-[10px] font-bold text-slate-600">Project Stalls</span>
+                                <div className="w-4 h-3 rounded bg-blue-600 border border-white shadow-sm" />
+                                <span className="text-[10px] font-bold text-slate-600">Exhibition Hubs</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded bg-orange-400" />
@@ -231,49 +287,85 @@ const App = () => {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Stall Detail Popup - NO backdrop-blur to avoid blurring the map */}
-            {selectedStall && (
-                <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center">
-                    {/* Backdrop - solid opacity, no blur */}
-                    <div
-                        className="absolute inset-0 bg-black/50"
-                        onClick={() => setSelectedStall(null)}
-                    />
-                    {/* Card */}
-                    <div className="relative bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden z-10">
-                        <div className="bg-blue-600 px-5 py-4 text-white relative">
-                            <div className="flex items-center gap-1.5 opacity-80 text-[9px] font-black uppercase mb-1 tracking-widest">
-                                <MapPin className="w-3 h-3" /> Exhibit S{selectedStall.id}
+                {/* Stall Detail Popup - NO backdrop-blur to avoid blurring the map */}
+                {selectedStall && (
+                    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center">
+                        {/* Backdrop - solid opacity, no blur */}
+                        <div
+                            className="absolute inset-0 bg-black/50"
+                            onClick={() => setSelectedStall(null)}
+                        />
+                        {/* Card */}
+                        <div className="relative bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden z-10">
+                            <div className="bg-blue-600 px-5 py-4 text-white relative">
+                                <div className="flex items-center gap-1.5 opacity-80 text-[9px] font-black uppercase mb-1 tracking-widest">
+                                    <MapPin className="w-3 h-3" /> {selectedStall.short} {(!selectedStall.id.includes('workshop')) ? 'HUB' : 'VENUE'}
+                                </div>
+                                <h2 className="text-xl font-black leading-tight tracking-tight pr-8">{selectedStall.title}</h2>
+                                <button
+                                    onClick={() => setSelectedStall(null)}
+                                    className="absolute top-3 right-3 bg-white/20 hover:bg-white/30 p-1.5 rounded-full transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
                             </div>
-                            <h2 className="text-xl font-black leading-tight tracking-tight pr-8">{selectedStall.title}</h2>
-                            <button
-                                onClick={() => setSelectedStall(null)}
-                                className="absolute top-3 right-3 bg-white/20 hover:bg-white/30 p-1.5 rounded-full transition-colors"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="px-5 py-4">
-                            <p className="text-slate-600 text-sm leading-relaxed font-medium mb-4">
-                                {selectedStall.description}
-                            </p>
-                            <button
-                                onClick={() => {
-                                    setSelectedStall(null);
-                                    setShowPath(true);
-                                }}
-                                className="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform"
-                            >
-                                Start Navigation
-                            </button>
+                            <div className="px-5 py-4">
+                                <p className="text-slate-600 text-sm leading-relaxed font-medium mb-4 whitespace-pre-line">
+                                    {selectedStall.description}
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        setSelectedStall(null);
+                                        setShowPath(true);
+                                    }}
+                                    className="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform"
+                                >
+                                    Start Navigation
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            <style>{`@keyframes dash { to { stroke-dashoffset: -1000; } }`}</style>
+                {/* Directory Slide-over / Modal */}
+                {isDirectoryOpen && (
+                    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsDirectoryOpen(false)} />
+                        <div className="relative bg-white w-full sm:max-w-md max-h-[85vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10 animate-in zoom-in-95 duration-200">
+                            <div className="bg-slate-900 px-5 py-4 text-white flex justify-between items-center shrink-0">
+                                <div>
+                                    <h2 className="text-lg font-black tracking-tight">Exhibition Directory</h2>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Find Hubs & Workshops</p>
+                                </div>
+                                <button onClick={() => setIsDirectoryOpen(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50">
+                                {allDestinations.map(dest => (
+                                    <button
+                                        key={dest.id}
+                                        onClick={() => {
+                                            setSelectedStall(dest);
+                                            setShowPath(true);
+                                            setIsDirectoryOpen(false);
+                                        }}
+                                        className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-left hover:border-blue-500 hover:shadow-md transition-all group active:scale-[0.98]"
+                                    >
+                                        <div className="flex justify-between items-start mb-1.5">
+                                            <h3 className="font-black text-slate-900 group-hover:text-blue-600 transition-colors">{dest.title}</h3>
+                                            <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{dest.location}</span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 font-medium line-clamp-2">{dest.description.replace(/\n\n/g, ' - ').replace(/\n/g, ' ')}</p>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <style>{`@keyframes dash { to { stroke-dashoffset: -1000; } }`}</style>
+            </div>
         </div>
     );
 };
