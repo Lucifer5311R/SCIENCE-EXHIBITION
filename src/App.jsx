@@ -50,7 +50,7 @@ const App = () => {
         const block2 = {
             id: 'workshops_block2',
             title: "Technical Workshops",
-            short: "WORKSHOPS",
+            short: "WORKSHOP",
             location: "Block 2",
             description: "📍 VENUE: First Floor, Block 2\n\n🤖 Workshop on Essentials of Robotics\nVENUE: BCA Lab\n\n🧠 Workshop on Essential AI Tools\nVENUE: MCA Lab",
             x: 565,
